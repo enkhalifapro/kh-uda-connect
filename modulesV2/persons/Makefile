@@ -1,4 +1,4 @@
-SERVICE = confluence-integration
+SERVICE = persons-service
 
 clean:
 	rm -rf ./bin

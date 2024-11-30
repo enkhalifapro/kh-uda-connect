@@ -2,16 +2,21 @@ package cmd
 
 import (
 	"enkhalifapro/persons/build"
+	"enkhalifapro/persons/internal"
 	"fmt"
+	//_ "google.golang.org/grpc"
+	//"net"
 	"net/http"
 
 	"enkhalifapro/persons/api/rest"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	//pb "path/to/your/proto/package"
 )
 
 var (
@@ -43,11 +48,38 @@ var (
 			db.SetMaxIdleConns(1)
 			db.SetConnMaxLifetime(0) // 0, connections are reused forever.
 
-			handler := rest.NewHandler()
-			http.HandleFunc("/healthz", handler.Health)
-			fmt.Println("Starting server on :8080")
-			if err := http.ListenAndServe(":8080", nil); err != nil {
-				fmt.Println("Error starting server:", err)
+			service := internal.NewService(db)
+			handler := rest.NewHandler(service)
+			router := httprouter.New()
+			router.POST("/", handler.Create)
+			router.GET("/healthz", handler.Health)
+
+			ch := make(chan error, 0)
+			go func() {
+				defer close(ch)
+				fmt.Println("Starting server on :8080")
+				if err := http.ListenAndServe(":8080", router); err != nil {
+					ch <- err
+				}
+			}()
+
+			/*// Start gRPC server
+			go func() {
+				lis, err := net.Listen("tcp", ":50051")
+				if err != nil {
+					log.Fatalf("Failed to listen: %v", err)
+				}
+				s := grpc.NewServer()
+				pb.RegisterGreeterServer(s, &server{})
+				log.Println("Starting gRPC server on :50051")
+				if err := s.Serve(lis); err != nil {
+					log.Fatalf("Failed to serve: %v", err)
+				}
+			}()*/
+
+			select {
+			case err := <-ch:
+				fmt.Println(err)
 			}
 		},
 	}
