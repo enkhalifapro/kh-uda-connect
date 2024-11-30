@@ -12,6 +12,7 @@ type Handler struct {
 }
 
 type Service interface {
+	GetAll() ([]internal.Person, error)
 	Add(person *internal.CreatePayload) error
 }
 
@@ -23,6 +24,16 @@ func NewHandler(srv Service) *Handler {
 	return &Handler{
 		service: srv,
 	}
+}
+
+func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	persons, err := h.service.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(persons)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

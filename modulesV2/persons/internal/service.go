@@ -22,6 +22,16 @@ type DBConnector interface {
 	MustExec(query string, args ...interface{}) sql.Result
 }
 
+// GetAll persons
+func (s *Service) GetAll() ([]Person, error) {
+	var res []Person
+	err := s.dbConnector.Select(&res, `SELECT * FROM public.person;`)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // Add a new person
 func (s *Service) Add(person *CreatePayload) error {
 	query := fmt.Sprintf(`INSERT INTO public.person(first_name, last_name,company_name) values ('%s','%s','%s')`, person.FirstName, person.LastName, person.CompanyName)
