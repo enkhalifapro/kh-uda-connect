@@ -52,6 +52,7 @@ var (
 			handler := rest.NewHandler(service)
 			router := httprouter.New()
 			router.GET("/", handler.GetAll)
+			router.GET("/id/:id", handler.GetByID)
 			router.POST("/", handler.Create)
 			router.GET("/healthz", handler.Health)
 

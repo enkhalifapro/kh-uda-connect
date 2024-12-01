@@ -32,6 +32,19 @@ func (s *Service) GetAll() ([]Person, error) {
 	return res, nil
 }
 
+// GetByID persons
+func (s *Service) GetByID(id int) (*Person, error) {
+	var res []Person
+	err := s.dbConnector.Select(&res, fmt.Sprintf(`SELECT * FROM public.person WHERE ID=%v limit 1;`, id))
+	if err != nil {
+		return nil, err
+	}
+	if len(res) > 0 {
+		return &res[0], nil
+	}
+	return nil, fmt.Errorf("person not found")
+}
+
 // Add a new person
 func (s *Service) Add(person *CreatePayload) error {
 	query := fmt.Sprintf(`INSERT INTO public.person(first_name, last_name,company_name) values ('%s','%s','%s')`, person.FirstName, person.LastName, person.CompanyName)

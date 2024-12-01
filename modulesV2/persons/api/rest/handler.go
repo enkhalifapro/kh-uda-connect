@@ -5,6 +5,7 @@ import (
 	"enkhalifapro/persons/internal"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct {
@@ -13,6 +14,7 @@ type Handler struct {
 
 type Service interface {
 	GetAll() ([]internal.Person, error)
+	GetByID(id int) (*internal.Person, error)
 	Add(person *internal.CreatePayload) error
 }
 
@@ -28,6 +30,22 @@ func NewHandler(srv Service) *Handler {
 
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	persons, err := h.service.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(persons)
+}
+
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	idParam := p.ByName("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	persons, err := h.service.GetByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
