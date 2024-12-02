@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"enkhalifapro/persons/build"
-	"enkhalifapro/persons/internal"
+	"enkhalifapro/connections/build"
+	"enkhalifapro/connections/internal"
 	"fmt"
 	//_ "google.golang.org/grpc"
 	//"net"
 	"net/http"
 
-	"enkhalifapro/persons/api/rest"
+	"enkhalifapro/connections/api/rest"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/julienschmidt/httprouter"
@@ -27,7 +27,7 @@ var (
 	dbPassword       string
 	runRestServerCmd = &cobra.Command{
 		Use:   "run-rest-server",
-		Short: "run persons-service rest server",
+		Short: "run connections-service rest server",
 		Long:  `run command will start gathering confluence data`,
 		Run: func(cmd *cobra.Command, args []string) {
 			logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -47,6 +47,30 @@ var (
 			db.SetMaxOpenConns(1)
 			db.SetMaxIdleConns(1)
 			db.SetConnMaxLifetime(0) // 0, connections are reused forever.
+
+			/*// init kafka client
+			partition := 0
+			// Set up SASL authentication
+			dialer := &kafka.Dialer{
+				Timeout:   10 * time.Second,
+				DualStack: true,
+				TLS: &tls.Config{
+					MinVersion: tls.VersionTLS12,
+				},
+			}
+			if kafkaUser != "" && kafkaPassword != "" {
+				dialer.SASLMechanism = plain.Mechanism{
+					Username: kafkaUser,
+					Password: kafkaPassword,
+				}
+			}
+
+			conn, err := dialer.DialLeader(context.Background(), "tcp", kafkaBroker, kafkaTopic, partition)
+			if err != nil {
+				log.Fatal("failed to dial leader:", err)
+			}
+			defer conn.Close()
+			conn.SetWriteDeadline(time.Now().Add(30 * time.Second))*/
 
 			service := internal.NewService(db)
 			handler := rest.NewHandler(service)

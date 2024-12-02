@@ -2,7 +2,7 @@ package rest
 
 import (
 	"encoding/json"
-	"enkhalifapro/persons/internal"
+	"enkhalifapro/connections/internal"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"

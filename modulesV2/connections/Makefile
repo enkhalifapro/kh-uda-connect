@@ -1,4 +1,4 @@
-SERVICE = persons-service
+SERVICE = connections-service
 
 clean:
 	rm -rf ./bin

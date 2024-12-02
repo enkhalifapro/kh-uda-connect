@@ -9,8 +9,6 @@ WORKDIR /tmp/persons-service
 
 COPY . .
 
-RUN go env -w GOPRIVATE=github.com/LF-Engineering/*
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/LF-Engineering".insteadOf "https://github.com/LF-Engineering"
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -32,4 +30,4 @@ COPY --from=builder /tmp/persons-service/out/persons-service /app/persons-servic
 # This container exposes port 8091 to the outside world
 EXPOSE 8092
 
-CMD ["/app/persons-service", "run"]
+CMD ["/app/persons-service"]

@@ -40,7 +40,7 @@ spec:
               value: "PLAINTEXT://0.0.0.0:9092"
           volumeMounts:
             - name: kafka-storage
-              mountPath: /var/lib/kafka/data
+              mountPath: /tmp/kafka/data
       volumes:
         - name: kafka-storage
           persistentVolumeClaim:

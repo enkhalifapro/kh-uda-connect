@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: zookeeper
+  name: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: zookeeper
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        network/kafka-network: "true"
+        service: zookeeper
+    spec:
+      containers:
+        - env:
+            - name: TZ
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_DATA_DIR
+              value: "/tmp/zookeeper/data"
+            - name: ZOOKEEPER_LOG_DIR
+              value: "/tmp/zookeeper/log"
+            - name: ZOOKEEPER_SERVER_ID
+              value: "1"
+          image: confluentinc/cp-zookeeper:7.0.1
+          name: zookeeper
+          ports:
+            - containerPort: 2181
+          resources: {}
+          volumeMounts:
+            - mountPath: /tmp/zookeeper/data
+              name: zookeeper-data
+            - mountPath: /tmp/zookeeper/log
+              name: zookeeper-log
+      hostname: zookeeper
+      restartPolicy: Always
+      volumes:
+        - name: zookeeper-data
+          persistentVolumeClaim:
+            claimName: zookeeper-data-pvc
+        - name: zookeeper-log
+          persistentVolumeClaim:
+            claimName: zookeeper-log-pvc
