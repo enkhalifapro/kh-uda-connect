@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"enkhalifapro/locations/build"
 	"enkhalifapro/locations/internal"
 	"fmt"
+	"github.com/segmentio/kafka-go"
 	//_ "google.golang.org/grpc"
 	//"net"
 	"net/http"
@@ -20,18 +22,20 @@ import (
 )
 
 var (
-	dbHost           string
-	dbPort           string
-	dbUser           string
-	dbName           string
-	dbPassword       string
-	runRestServerCmd = &cobra.Command{
+	dbHost                 string
+	dbPort                 string
+	dbUser                 string
+	dbName                 string
+	dbPassword             string
+	kafkaAddress           string
+	kafkaPartition         int
+	locationAddedTopicName string
+	runRestServerCmd       = &cobra.Command{
 		Use:   "run-rest-server",
 		Short: "run locations-service rest server",
 		Long:  `run command will start gathering confluence data`,
 		Run: func(cmd *cobra.Command, args []string) {
 			logrus.SetFormatter(&logrus.JSONFormatter{})
-			// todo: add version to logger
 			logger := logrus.WithFields(
 				logrus.Fields{
 					"service": build.AppName,
@@ -48,7 +52,13 @@ var (
 			db.SetMaxIdleConns(1)
 			db.SetConnMaxLifetime(0) // 0, connections are reused forever.
 
-			service := internal.NewService(db)
+			// init kafka connection
+			kafkaConn, err := kafka.DialLeader(context.Background(), "tcp", kafkaAddress, locationAddedTopicName, kafkaPartition)
+			if err != nil {
+				logger.Fatalln("failed to dial leader:", err)
+			}
+
+			service := internal.NewService(db, kafkaConn)
 			handler := rest.NewHandler(service)
 			router := httprouter.New()
 			router.POST("/", handler.Create)
@@ -98,4 +108,8 @@ func getRestEnvVars() {
 	dbUser = viper.GetString("DB_USERNAME")
 	dbPassword = viper.GetString("DB_PASSWORD")
 	dbName = viper.GetString("DB_NAME")
+
+	kafkaAddress = viper.GetString("KAFKA_ADDRESS")
+	kafkaPartition = viper.GetInt("KAFKA_PARTITION")
+	locationAddedTopicName = "locationAddedTopic"
 }

@@ -2,16 +2,21 @@ package internal
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 )
 
 type Service struct {
-	dbConnector DBConnector
+	dbConnector    DBConnector
+	kafkaConnector KafkaConnector
 }
 
-func NewService(db DBConnector) *Service {
+func NewService(db DBConnector, kafkaConn KafkaConnector) *Service {
 	return &Service{
-		dbConnector: db,
+		dbConnector:    db,
+		kafkaConnector: kafkaConn,
 	}
 }
 
@@ -20,6 +25,11 @@ type DBConnector interface {
 	Get(dest interface{}, query string, args ...interface{}) error
 	Select(dest interface{}, query string, args ...interface{}) error
 	MustExec(query string, args ...interface{}) sql.Result
+}
+
+// KafkaConnector interface for kafka message producing operations
+type KafkaConnector interface {
+	WriteMessages(msgs ...kafka.Message) (int, error)
 }
 
 // Add a new person
@@ -33,5 +43,22 @@ func (s *Service) Add(location *CreatePayload) error {
 	if int(affRows) == 0 {
 		return fmt.Errorf("location saving failure")
 	}
-	return nil
+	
+	err = s.PublishLocationAddedEvent(location)
+	return err
+}
+
+func (s *Service) PublishLocationAddedEvent(location *CreatePayload) error {
+	id, _ := uuid.NewUUID()
+	msg, err := json.Marshal(location)
+	if err != nil {
+		return err
+	}
+	_, err = s.kafkaConnector.WriteMessages(
+		kafka.Message{
+			Key:   []byte(id.String()),
+			Value: msg,
+		},
+	)
+	return err
 }

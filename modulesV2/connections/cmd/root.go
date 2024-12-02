@@ -25,7 +25,6 @@ var (
 				log.Fatal("failed to dial leader:", err)
 			}
 
-			//conn.SetWriteDeadline(time.Now().Add(60 * time.Second))
 			for {
 				id, _ := uuid.NewUUID()
 				msg := fmt.Sprintf("ayman two! %v", time.Now())

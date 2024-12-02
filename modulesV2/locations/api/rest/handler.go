@@ -5,6 +5,7 @@ import (
 	"enkhalifapro/locations/internal"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -31,6 +32,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	req.CreationTS = time.Now().Unix()
 	if err := h.service.Add(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

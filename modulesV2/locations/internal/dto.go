@@ -16,6 +16,7 @@ type Location struct {
 type CreatePayload struct {
 	PersonID   int    `json:"personId" db:"person_id"`
 	Coordinate string `json:"coordinate" db:"coordinate"`
+	CreationTS int16  `json:"creationTime"`
 }
 
 type HealthResponse struct {
