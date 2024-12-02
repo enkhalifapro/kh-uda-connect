@@ -4,10 +4,13 @@ import (
 	"context"
 	"enkhalifapro/locations/build"
 	"enkhalifapro/locations/internal"
+	"enkhalifapro/locations/pb"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	//_ "google.golang.org/grpc"
-	//"net"
+	"google.golang.org/grpc"
+	"log"
+	"net"
+
 	"net/http"
 
 	"enkhalifapro/locations/api/rest"
@@ -18,8 +21,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	//pb "path/to/your/proto/package"
 )
+
+type server struct {
+	pb.UnimplementedGreeterServer
+}
 
 var (
 	dbHost                 string
@@ -52,7 +58,7 @@ var (
 			db.SetMaxIdleConns(1)
 			db.SetConnMaxLifetime(0) // 0, connections are reused forever.
 
-			// init kafka connection
+			// init kafka producer connection
 			kafkaConn, err := kafka.DialLeader(context.Background(), "tcp", kafkaAddress, locationAddedTopicName, kafkaPartition)
 			if err != nil {
 				logger.Fatalln("failed to dial leader:", err)
@@ -73,19 +79,19 @@ var (
 				}
 			}()
 
-			/*// Start gRPC server
+			// Start gRPC server
 			go func() {
-				lis, err := net.Listen("tcp", ":50051")
+				lis, err := net.Listen("tcp", ":5051")
 				if err != nil {
-					log.Fatalf("Failed to listen: %v", err)
+					ch <- err
 				}
 				s := grpc.NewServer()
 				pb.RegisterGreeterServer(s, &server{})
-				log.Println("Starting gRPC server on :50051")
+				log.Println("Server is running on port :5051")
 				if err := s.Serve(lis); err != nil {
-					log.Fatalf("Failed to serve: %v", err)
+					ch <- err
 				}
-			}()*/
+			}()
 
 			select {
 			case err := <-ch:

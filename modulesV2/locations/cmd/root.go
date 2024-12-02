@@ -17,6 +17,7 @@ var (
 		Short: "locations service manages locations data",
 		Long:  `locations service manages locations data`,
 		Run: func(cmd *cobra.Command, args []string) {
+			// todo: move to connections server then delete me
 			topic := "test1"
 			partition := 0
 

@@ -18,3 +18,5 @@ build-docker:
 
 run-docker:
 	docker run -p 8092:8092 -d $(SERVICE)
+protoc:
+	protoc --go_out=. --go-grpc_out=. ./pb/*.proto
