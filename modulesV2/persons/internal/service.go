@@ -45,6 +45,15 @@ func (s *Service) GetByID(id int) (*Person, error) {
 	return nil, fmt.Errorf("person not found")
 }
 
+func (s *Service) GetConnectionsByPersonID(personID int, startDate string, endDate string, distance float64) ([]Connection, error) {
+	var res []Connection
+	err := s.dbConnector.Select(&res, fmt.Sprintf(`SELECT * FROM public.connections WHERE person_id=%v creation_time BETWEEN '%s' AND '%s' AND distance < %v;`, personID, startDate, endDate, distance))
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // Add a new person
 func (s *Service) Add(person *CreatePayload) error {
 	query := fmt.Sprintf(`INSERT INTO public.person(first_name, last_name,company_name) values ('%s','%s','%s')`, person.FirstName, person.LastName, person.CompanyName)

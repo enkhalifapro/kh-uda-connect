@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: locations-service
+  name: locations-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locations-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: locations-service
+    spec:
+      containers:
+        - image: enkhalifapro/locations-service:latest
+          imagePullPolicy: IfNotPresent
+          name: locations-service
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+          env:
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-env
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-env
+                  key: DB_NAME
+            - name: KAFKA_ADDRESS
+              value: "kafka:9092"
+            - name: KAFKA_PARTITION
+              value: "0"
+            - name: "LOCATION_ADDED_TOPIC_NAME"
+              value: "locationAddedTopic"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: locations-service
+  name: locations-service
+spec:
+  ports:
+    - name: "5051"
+      port: 5051
+      targetPort: 5051
+      nodePort: 30051
+    - name: "8081"
+      port: 8081
+      targetPort: 8081
+      nodePort: 30081
+  selector:
+    service: locations-service
+  type: NodePort
+---

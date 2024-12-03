@@ -17,4 +17,4 @@ build-docker:
 	docker build --build-arg VERSION=0.0.0 -t $(SERVICE) .
 
 run-docker:
-	docker run -p 8092:8092 -d $(SERVICE)
+	docker run -p 8080:8080 -d $(SERVICE)

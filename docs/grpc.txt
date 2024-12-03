@@ -1,0 +1,30 @@
+# Locations Service is exposing locations using grpc, and connections service calling it
+- Locations Service (grpc server)
+- Connections Service (grpc client)
+
+- grpc server exposes just one service named `LocationsService` exposes locations filtered by time, defined as following
+
+service LocationsService {
+  rpc GetLocations (LocationsRequest) returns (LocationsList) {}
+}
+
+
+- Its input message is LocationsRequest, defined as following
+
+
+message LocationsRequest {
+  google.protobuf.Timestamp created_at = 1;
+}
+
+- Its output is list of locations defined as following
+
+
+message Location {
+  int32 id = 1;
+  int32 personId = 2;
+  string coordinate = 3;
+}
+
+message LocationsList {
+  repeated Location locations = 1; // This defines an array of MyMessage
+}

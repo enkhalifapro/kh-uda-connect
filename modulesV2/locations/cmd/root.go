@@ -1,12 +1,6 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/segmentio/kafka-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,7 +12,7 @@ var (
 		Long:  `locations service manages locations data`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// todo: move to connections server then delete me
-			topic := "test1"
+			/*topic := "test1"
 			partition := 0
 
 			r := kafka.NewReader(kafka.ReaderConfig{
@@ -37,7 +31,7 @@ var (
 
 				// Simulate processing time
 				time.Sleep(1 * time.Second)
-			}
+			}*/
 		},
 	}
 )

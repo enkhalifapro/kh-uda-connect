@@ -1,34 +1,31 @@
 package cmd
 
 import (
-	"fmt"
-
 	"enkhalifapro/connections/build"
+	g "enkhalifapro/connections/grpc"
 	"enkhalifapro/connections/internal"
-
-	"github.com/segmentio/kafka-go"
-
-	//_ "google.golang.org/grpc"
-	//"net"
+	"fmt"
+	"google.golang.org/grpc"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	//pb "path/to/your/proto/package"
 )
 
 var (
-	dbHost                 string
-	dbPort                 string
-	dbUser                 string
-	dbName                 string
-	dbPassword             string
-	kafkaAddress           string
-	kafkaPartition         int
-	locationAddedTopicName string
-	runConsumerServerCmd   = &cobra.Command{
+	dbHost                   string
+	dbPort                   string
+	dbUser                   string
+	dbName                   string
+	dbPassword               string
+	kafkaAddress             string
+	kafkaPartition           int
+	locationsAddedTopicName  string
+	locationsServiceGRPCAdrs string
+	runConsumerServerCmd     = &cobra.Command{
 		Use:   "run-consumer-server",
 		Short: "run connections-service consumer server",
 		Long:  `run command will start gathering confluence data`,
@@ -52,13 +49,22 @@ var (
 			db.SetConnMaxLifetime(0) // 0, connections are reused forever.
 
 			// init kafka consumer connection
-			conn := kafka.NewReader(kafka.ReaderConfig{
+			kafKaConn := kafka.NewReader(kafka.ReaderConfig{
 				Brokers:   []string{kafkaAddress},
-				Topic:     locationAddedTopicName,
+				Topic:     locationsAddedTopicName,
 				Partition: kafkaPartition,
 			})
 
-			service := internal.NewService(db, conn)
+			// Set up a connection to the locations grpc server.
+			grpcConn, err := grpc.NewClient(locationsServiceGRPCAdrs, grpc.WithInsecure())
+			if err != nil {
+				logger.Fatalf("did not connect: %v", err)
+			}
+			defer grpcConn.Close()
+
+			locationsSrv := g.NewLocationsClient(grpcConn)
+			service := internal.NewService(db, kafKaConn, locationsSrv)
+			fmt.Println(service)
 
 		},
 	}
@@ -80,5 +86,6 @@ func getServerEnvVars() {
 
 	kafkaAddress = viper.GetString("KAFKA_ADDRESS")
 	kafkaPartition = viper.GetInt("KAFKA_PARTITION")
-	locationAddedTopicName = "locationAddedTopic"
+	locationsAddedTopicName = viper.GetString("LOCATIONS_ADDED_TOPIC_NAME")
+	locationsServiceGRPCAdrs = viper.GetString("LOCATIONS_SERVICE_GRPC_ADRS")
 }

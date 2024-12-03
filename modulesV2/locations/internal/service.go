@@ -32,6 +32,15 @@ type KafkaConnector interface {
 	WriteMessages(msgs ...kafka.Message) (int, error)
 }
 
+func (s *Service) GetLocationsByDate(day string) ([]Location, error) {
+	var res []Location
+	err := s.dbConnector.Select(&res, fmt.Sprintf(`SELECT * FROM public.location WHERE creation_time::date = '%s';`, day))
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // Add a new person
 func (s *Service) Add(location *CreatePayload) error {
 	query := fmt.Sprintf(`insert into public.location (person_id, coordinate) values (%v, '%s');`, location.PersonID, location.Coordinate)
@@ -43,7 +52,7 @@ func (s *Service) Add(location *CreatePayload) error {
 	if int(affRows) == 0 {
 		return fmt.Errorf("location saving failure")
 	}
-	
+
 	err = s.PublishLocationAddedEvent(location)
 	return err
 }

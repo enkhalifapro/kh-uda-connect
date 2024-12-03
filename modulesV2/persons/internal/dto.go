@@ -1,5 +1,7 @@
 package internal
 
+import "time"
+
 type Person struct {
 	ID          int    `json:"id"`
 	FirstName   string `json:"firstName" db:"first_name"`
@@ -15,4 +17,11 @@ type CreatePayload struct {
 
 type HealthResponse struct {
 	Message string `json:"message"`
+}
+
+type Connection struct {
+	ConnectionID       int       `json:"connectionId" db:"connection_id"`
+	ConnectionLocation string    `json:"connection_location" db:"connection_location"`
+	Distance           float64   `json:"distance" db:"distance"`
+	CreationTime       time.Time `json:"creationTime" db:"creation_time"`
 }

@@ -1,31 +1,39 @@
-package main
+package grpc
 
 import (
 	"context"
-	"log"
-	"net"
-
+	"enkhalifapro/locations/internal"
 	pb "enkhalifapro/locations/pb" // Update this to the correct import path
-	"google.golang.org/grpc"
 )
 
-type server struct {
-	pb.UnimplementedGreeterServer
+type LocationServer struct {
+	pb.UnimplementedLocationsServiceServer
+	service Service
 }
 
-func (s *server) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello " + req.Name}, nil
+type Service interface {
+	GetLocationsByDate(day string) ([]internal.Location, error)
 }
 
-func main() {
-	lis, err := net.Listen("tcp", ":50051")
+func NewLocationServer() *LocationServer {
+	return &LocationServer{}
+}
+
+func (s *LocationServer) GetLocations(ctx context.Context, req *pb.LocationsRequest) (*pb.LocationsList, error) {
+	locations, err := s.service.GetLocationsByDate(req.CreatedAt.AsTime().Format("2006-01-02"))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return nil, err
 	}
-	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
-	log.Println("Server is running on port :50051")
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	res := &pb.LocationsList{}
+	locs := make([]*pb.Location, len(locations))
+	for _, l := range locations {
+		locs = append(locs, &pb.Location{
+			Id:         int32(l.ID),
+			PersonId:   int32(l.PersonID),
+			Coordinate: l.Coordinate,
+		})
 	}
+	res.Locations = locs
+
+	return res, nil
 }

@@ -31,7 +31,6 @@ var (
 		Long:  `run command will start gathering confluence data`,
 		Run: func(cmd *cobra.Command, args []string) {
 			logrus.SetFormatter(&logrus.JSONFormatter{})
-			// todo: add version to logger
 			logger := logrus.WithFields(
 				logrus.Fields{
 					"service": build.AppName,
@@ -64,20 +63,6 @@ var (
 					ch <- err
 				}
 			}()
-
-			/*// Start gRPC server
-			go func() {
-				lis, err := net.Listen("tcp", ":50051")
-				if err != nil {
-					log.Fatalf("Failed to listen: %v", err)
-				}
-				s := grpc.NewServer()
-				pb.RegisterGreeterServer(s, &server{})
-				log.Println("Starting gRPC server on :50051")
-				if err := s.Serve(lis); err != nil {
-					log.Fatalf("Failed to serve: %v", err)
-				}
-			}()*/
 
 			select {
 			case err := <-ch:

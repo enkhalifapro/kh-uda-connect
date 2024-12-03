@@ -11,6 +11,7 @@ var (
 		Short: "connections service manages connections data",
 		Long:  `connections service manages connections data`,
 		Run: func(cmd *cobra.Command, args []string) {
+
 		},
 	}
 )

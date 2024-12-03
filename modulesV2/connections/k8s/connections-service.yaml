@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: connections-service
+  name: connections-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connections-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: connections-service
+    spec:
+      containers:
+        - image: enkhalifapro/connections-service:latest
+          imagePullPolicy: IfNotPresent
+          name: connections-service
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+          env:
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-env
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-env
+                  key: DB_NAME
+            - name: KAFKA_ADDRESS
+              value: "kafka:9092"
+            - name: KAFKA_PARTITION
+              value: "0"
+            - name: "LOCATIONS_ADDED_TOPIC_NAME"
+              value: "locationAddedTopic"
+            - name: "LOCATIONS_SERVICE_GRPC_ADDRESS"
+              value: "locations-service:5051"

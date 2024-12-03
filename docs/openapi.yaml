@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: uda-connect
+  version: 1.0.0
+  contact: {}
+servers:
+- url: localhost
+paths:
+  /:
+    get:
+      summary: GetAllPersons
+      description: GetAllPersons
+      operationId: getallpersons
+      responses:
+        '200':
+          description: ''
+    post:
+      summary: CreatePerson
+      description: CreatePerson
+      operationId: createperson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                CompanyName:
+                  type: string
+                  example: ''
+                firstName:
+                  type: string
+                  example: ''
+                lastName:
+                  type: string
+                  example: ''
+            examples:
+              CreateLocation:
+                value:
+                  CompanyName: ''
+                  firstName: ''
+                  lastName: ''
+              CreatePerson:
+                value:
+                  CompanyName: ''
+                  firstName: ''
+                  lastName: ''
+      responses:
+        '200':
+          description: ''
+  /healthz:
+    get:
+      summary: PersonsHealth
+      description: PersonsHealth
+      operationId: personshealth
+      responses:
+        '200':
+          description: ''
+  /{id}:
+    get:
+      summary: GetPersonByID
+      description: GetPersonByID
+      operationId: getpersonbyid
+      responses:
+        '200':
+          description: ''
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ''
+  /{personId}/{startDate}/{endDate}/{distance}:
+    get:
+      summary: GetPersonLocations
+      description: GetPersonLocations
+      operationId: getpersonlocations
+      responses:
+        '200':
+          description: ''
+    parameters:
+    - name: personId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ''
+    - name: startDate
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ''
+    - name: endDate
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ''
+    - name: distance
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ''
+tags: []
+

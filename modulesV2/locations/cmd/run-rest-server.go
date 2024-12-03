@@ -13,8 +13,8 @@ import (
 
 	"net/http"
 
+	g "enkhalifapro/locations/api/grpc"
 	"enkhalifapro/locations/api/rest"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
@@ -22,10 +22,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-type server struct {
-	pb.UnimplementedGreeterServer
-}
 
 var (
 	dbHost                 string
@@ -79,14 +75,16 @@ var (
 				}
 			}()
 
+			grpcServer := g.NewLocationServer()
 			// Start gRPC server
 			go func() {
+				defer close(ch)
 				lis, err := net.Listen("tcp", ":5051")
 				if err != nil {
 					ch <- err
 				}
 				s := grpc.NewServer()
-				pb.RegisterGreeterServer(s, &server{})
+				pb.RegisterLocationsServiceServer(s, grpcServer)
 				log.Println("Server is running on port :5051")
 				if err := s.Serve(lis); err != nil {
 					ch <- err

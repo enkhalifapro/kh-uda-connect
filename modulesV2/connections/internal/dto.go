@@ -18,3 +18,9 @@ type Connection struct {
 	ConnectionLocation string
 	CreationTime       time.Time
 }
+
+type Location struct {
+	ID         int
+	PersonID   int
+	Coordinate string
+}

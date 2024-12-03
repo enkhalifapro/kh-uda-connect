@@ -1,0 +1,15 @@
+# Overview
+UdaConnect V2 consists of 3 microservice:
+- PersonsService: Responsible for persons management APIs
+- LocationsService: Responsible for locations management APIs
+- ConnectionService: Responsible for connecting people based on their locations
+
+# Workflow
+- User mobile sends a location(PersonsID - GeoPoint) to location service
+- Locations service saves the new location and send an event(PersonId - GeoPoint) to kafka topic named `locationAddedTopic`
+- Connections services consume the events from `locationAddedTopic` and process it as following:
+    - Call Locations service via grpc to get all person locations by time
+    - Calculate the distance between every person locations and event's person location
+    - Save connection record to db table named 'connections' consists of [id - person_id - person_location - connection_id - connection_location - distance -created_time]
+
+- Using connections table persons/connections API can get all connections without any processing on the fly.

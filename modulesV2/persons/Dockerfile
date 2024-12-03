@@ -28,6 +28,6 @@ RUN apk add openssh-client
 COPY --from=builder /tmp/persons-service/out/persons-service /app/persons-service
 
 # This container exposes port 8091 to the outside world
-EXPOSE 8092
+EXPOSE 8080
 
-CMD ["/app/persons-service"]
+CMD ["/app/persons-service","run-rest-server"]
